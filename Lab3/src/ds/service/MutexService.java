@@ -48,7 +48,7 @@ public class MutexService {
 		System.out.println("[State: Requesting lock]");
 		Group votingGroup = msgPasser.groups.get(this.votingSet);
 		TimeStampedMessage lockReq = new TimeStampedMessage("", Kind.MULTICAST.toString(),
-															Kind.REQUEST.toString(), votingGroup.getName());
+				Kind.REQUEST.toString(), votingGroup.getName());
 
 		/* Increment and attach timestamp */
 		TimeStamp gts = votingGroup.updateGroupTSOnSend(msgPasser.localName);
@@ -79,7 +79,7 @@ public class MutexService {
 
 		Group votingGroup = msgPasser.groups.get(this.votingSet);
 		TimeStampedMessage unlockReq = new TimeStampedMessage("", Kind.MULTICAST.toString(),
-																Kind.RELEASE.toString(), votingGroup.getName());
+				Kind.RELEASE.toString(), votingGroup.getName());
 
 		/* Increment and attach timestamp */
 		TimeStamp gts = votingGroup.updateGroupTSOnSend(msgPasser.localName);
@@ -121,7 +121,11 @@ public class MutexService {
 		voteMsg.setSrc(msgPasser.localName);
 		voteMsg.setKind("");
 		voteMsg.setData(Kind.VOTE.toString());
-		msgPasser.send(voteMsg);
+
+		if (voteMsg.getDest().equals(msgPasser.localName))
+			receiveVote(voteMsg);
+		else
+			msgPasser.send(voteMsg);
 	}
 
 	public void receiveVote(TimeStampedMessage voteMsg) {
