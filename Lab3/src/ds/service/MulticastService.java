@@ -32,7 +32,7 @@ public class MulticastService {
 				holdbackMap.put(grpName, grpHoldbackQueue);
 				deliverMap.put(grpName, deliverQueue);
 			}
-			
+
 			for (String groupName : msgPasser.groups.keySet()) {
 				Group grp = msgPasser.groups.get(groupName);
 
@@ -82,7 +82,7 @@ public class MulticastService {
 				return true;
 			}
 		}
-		
+
 		/* Not found */
 		return false;		
 	}
@@ -96,7 +96,7 @@ public class MulticastService {
 		if (!checkDupDeliveredMessages(mmsg, mmsg.getGroupName())) {
 			/* If message is not already there, do this */
 			hmsg = this.checkExists(mmsg);
-			
+
 			if (hmsg == null)
 			{
 				hmsg = new HoldBackMessage(mmsg);
@@ -112,7 +112,7 @@ public class MulticastService {
 				/* Else just decrement the counter for the message received */
 				hmsg.addAck(mmsg.getSrc());		
 			}	
-			
+
 			/* Deliver to Receive Buffer if counter is zero */
 			if (hmsg.isReadyToBeDelivered() == true)
 			{
@@ -168,13 +168,13 @@ public class MulticastService {
 		}
 		return true;
 	}
-	
+
 	public boolean checkIfOkToDeliver(HoldBackMessage hbMsg, ArrayList<HoldBackMessage> hbQueue) {
 		for (HoldBackMessage holdBackMessage : hbQueue) {
 			if (hbMsg.compareTo(holdBackMessage) == 1)
 				return false;
 		}
-		
+
 		return true;
 	}
 
@@ -207,16 +207,21 @@ public class MulticastService {
 					HoldBackMessage reqMsg = hbqueue.get(index);
 					it.remove();
 					TimeStampedMessage reqTs = reqMsg.getMessage();
-					
+
 					HoldBackMessage deliveredMsg = new HoldBackMessage(reqTs);
 					ArrayList<HoldBackMessage> deliverList = deliverMap.get(groupName);
 					deliverList.add(deliveredMsg);
-					
+
 					hbMapLock.unlock();
 
 					/* Add to recv buffer only if no other messages before this */
-					msgPasser.addToRecvBuf(reqTs);
-					
+					if (reqTs.getData().equals(Kind.REQUEST))
+						FactoryService.getMutexService().receiveMutexRequest(reqTs);
+					else if (reqTs.getData().equals(Kind.RELEASE))
+						FactoryService.getMutexService().receiveMutexRelease(reqTs);
+					else
+						msgPasser.addToRecvBuf(reqTs);
+
 					/* Remove the messages in the delay buffer */
 					msgPasser.clearRecvDelayBuf();
 
@@ -227,10 +232,10 @@ public class MulticastService {
 				}
 			}
 		}
-		
+
 		return delivered;
 	}
-	
+
 	/* Get TimeStamp difference between 2 Vector TimeStamps */
 	public int getTSDiff(VectorTimeStamp t1, VectorTimeStamp t2)
 	{
@@ -292,6 +297,9 @@ public class MulticastService {
 			receiveAck(msg);
 			hbMapLock.unlock();
 			return true;
+		}
+		else if (msg.getData().equals(Kind.VOTE.toString())) {
+			FactoryService.getMutexService().receiveVote(msg);
 		}
 		return false;
 	}
