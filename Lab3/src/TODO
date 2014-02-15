@@ -1,0 +1,16 @@
+1) Call time stamp functions from message parser
+2) add locks
+3) write comparators
+4) logger service
+
+
+Vivek :
+Call time stamp functions from message parser
+comparator locks for vector class
+
+
+Vignesh:
+comparator nd locks for logical class
+
+
+After merge, write logger
