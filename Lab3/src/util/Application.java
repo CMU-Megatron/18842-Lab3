@@ -16,7 +16,7 @@ import ds.service.MulticastService;
 public class Application
 {
 	public static long intervalTime = 60000;
-	
+
 	public static void main(String args[]) throws Exception
 	{
 		if(args.length != 2)
@@ -28,9 +28,9 @@ public class Application
 		{
 			MessagePasser.createInstance(args[0], args[1]);
 		}
-		
+
 		Scanner reader = new Scanner(System.in);
-		
+
 		System.out.println("Welcome to the COMMUNICATOR!");
 		int option = 0;
 		System.out.println("Please enter the interval time for ack timeout(sec) : ");
@@ -38,7 +38,7 @@ public class Application
 		reader.nextLine();
 		System.out.println();
 		System.out.println("---------------------");
-		
+
 		MessagePasser msgPasser = MessagePasser.getInstance();
 		MulticastService mcService = FactoryService.getMultiCastService();
 
@@ -61,13 +61,19 @@ public class Application
 			System.out.println("3> Receive");
 			System.out.println("4> Print Current Time Stamp");
 			System.out.println("5> Increment Local Time Stamp");
-			System.out.println("6> Exit");
+			System.out.println("6> Acquire Lock");
+			System.out.println("7> ReleaseLock");
+			System.out.println("8> Exit");
 
 			option = 0;
-			while( option!=1 && option!=2 && option!=3 && option!=4 && option!=5 && option!=6)
+			while( option!=1 && option!=2 && option!=3 && option!=4 && option!=5 && option!=6 && option!=7 && option!=8)
 			{
-				System.out.print("Select Option(1 or 2 or 3 or 4 or 5 or 6) : ");
-				option = reader.nextInt();
+				System.out.print("Select Option(1 or 2 or 3 or 4 or 5 or 6 or 7 or 8) : ");
+				try {
+					option = reader.nextInt();
+				} catch(Exception e) {
+					option = 0;
+				}
 			}
 			reader.nextLine();
 			System.out.println();
@@ -281,8 +287,20 @@ public class Application
 				System.out.println();
 			}
 			break;
-
+			
 			case 6:
+			{
+				FactoryService.getMutexService().acquireMutex();
+			}
+			break;
+			
+			case 7:
+			{
+				FactoryService.getMutexService().releaseMutex();
+			}
+			break;
+
+			case 8:
 			{
 				System.out.println("==========================");
 				System.out.println("  Have a Good Day!! :)");

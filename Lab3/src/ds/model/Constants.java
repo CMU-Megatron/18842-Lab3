@@ -5,5 +5,6 @@ public class Constants{
 	public static final String actionDelay = "delay";
 	
 	public static enum TimeStampType {LOGICAL,VECTOR,NONE}; 
-	public static enum Kind {ACK, TIMESTAMP, UNICAST, MULTICAST};
+	public static enum Kind {ACK, TIMESTAMP, UNICAST, MULTICAST, REQUEST, INQUIRE, RELINQUISH, RELEASE, VOTE};
+	public static enum MutexState {HELD, RELEASED, WANTED};
 }

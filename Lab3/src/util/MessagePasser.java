@@ -73,6 +73,8 @@ public class MessagePasser{
 
 		SocketListener socketListener = new SocketListener(this.localNode);
 		socketListener.start();
+		//FactoryService.getMultiCastService();
+		//FactoryService.getMutexService();
 	}
 
 	public static void createInstance(String configFileName, String localName){
