@@ -11,11 +11,13 @@ import ds.model.Constants.Kind;
 import ds.model.VectorTimeStamp;
 import ds.service.FactoryService;
 import ds.service.MulticastService;
+import ds.service.MutexService;
 
 
 public class Application
 {
 	public static long intervalTime = 60000;
+	public static MutexService mService = null;
 
 	public static void main(String args[]) throws Exception
 	{
@@ -41,6 +43,7 @@ public class Application
 
 		MessagePasser msgPasser = MessagePasser.getInstance();
 		MulticastService mcService = FactoryService.getMultiCastService();
+		mService = FactoryService.getMutexService();
 
 		List<Node> nodes = msgPasser.getNodeList();
 		Node loggerNode=null;
@@ -199,7 +202,7 @@ public class Application
 				/* Increment and attach timestamp */
 				TimeStamp gts = selectedGroup.updateGroupTSOnSend(msgPasser.localName);
 				VectorTimeStamp vts = (VectorTimeStamp)gts;
-				System.out.println("TimeStamp got : "+Arrays.toString(vts.getVector()));
+				//System.out.println("TimeStamp got : "+Arrays.toString(vts.getVector()));
 				if (gts == null)
 				{
 					System.out.println("Wrong group or wrong node");
@@ -290,13 +293,13 @@ public class Application
 			
 			case 6:
 			{
-				FactoryService.getMutexService().acquireMutex();
+				mService.acquireMutex();
 			}
 			break;
 			
 			case 7:
 			{
-				FactoryService.getMutexService().releaseMutex();
+				mService.releaseMutex();
 			}
 			break;
 

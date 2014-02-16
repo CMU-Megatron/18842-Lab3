@@ -215,9 +215,9 @@ public class MulticastService {
 					hbMapLock.unlock();
 
 					/* Add to recv buffer only if no other messages before this */
-					if (reqTs.getData().equals(Kind.REQUEST))
+					if (reqTs.getData().equals(Kind.REQUEST.toString()))
 						FactoryService.getMutexService().receiveMutexRequest(reqTs);
-					else if (reqTs.getData().equals(Kind.RELEASE))
+					else if (reqTs.getData().equals(Kind.RELEASE.toString()))
 						FactoryService.getMutexService().receiveMutexRelease(reqTs);
 					else
 						msgPasser.addToRecvBuf(reqTs);
@@ -300,6 +300,7 @@ public class MulticastService {
 		}
 		else if (msg.getData().equals(Kind.VOTE.toString())) {
 			FactoryService.getMutexService().receiveVote(msg);
+			return true;
 		}
 		return false;
 	}

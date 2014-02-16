@@ -37,6 +37,7 @@ public class MessagePasser{
 	private int localIndex;
 	public static Constants.TimeStampType tsType;
 	public static HashMap<String, Group> groups;
+	public static HashMap <String, String> votingList;
 	public static String localName;
 
 	public List<Node> getNodeList()
@@ -62,9 +63,10 @@ public class MessagePasser{
 		this.node2socket = new HashMap<String, Socket>();
 		this.node2socketLock = new ReentrantLock();		
 		this.ruleLock = new ReentrantLock();
+		this.votingList = new HashMap<String, String>();
 
 		try{
-			this.localIndex = ConfigurationParser.parseConfigurationFile(configFileName, localName, localNode, this.nodes, groups, this.sendRules, this.recvRules);
+			this.localIndex = ConfigurationParser.parseConfigurationFile(configFileName, localName, localNode, this.nodes, groups, votingList, this.sendRules, this.recvRules);
 		}catch(Exception e){
 			e.printStackTrace();
 		}

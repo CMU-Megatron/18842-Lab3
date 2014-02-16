@@ -50,6 +50,8 @@ public class FactoryService
 	
 	public static synchronized MutexService getMutexService()
 	{
+		getMultiCastService();
+		
 		if (mService == null)
 		{
 			mService = new MutexService();
