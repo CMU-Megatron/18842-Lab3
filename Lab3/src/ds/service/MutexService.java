@@ -110,12 +110,12 @@ public class MutexService {
 	}
 
 	public void releaseMutex() {
-		serviceLock.lock();
-
 		if (this.state != MutexState.HELD) {
 			System.out.println("\nWarning : Lock was not held. Invalid unlock() operation!");
 			return;
 		}
+		
+		serviceLock.lock();
 
 		Group votingGroup = msgPasser.groups.get(this.votingSet);
 		TimeStampedMessage unlockReq = new TimeStampedMessage("", Kind.MULTICAST.toString(),
