@@ -65,13 +65,14 @@ public class Application
 			System.out.println("4> Print Current Time Stamp");
 			System.out.println("5> Increment Local Time Stamp");
 			System.out.println("6> Acquire Lock");
-			System.out.println("7> ReleaseLock");
-			System.out.println("8> Exit");
+			System.out.println("7> Release Lock");
+			System.out.println("8> Print message counters");
+			System.out.println("9> Exit");
 
 			option = 0;
-			while( option!=1 && option!=2 && option!=3 && option!=4 && option!=5 && option!=6 && option!=7 && option!=8)
+			while( option!=1 && option!=2 && option!=3 && option!=4 && option!=5 && option!=6 && option!=7 && option!=8 && option!=9)
 			{
-				System.out.print("Select Option(1 or 2 or 3 or 4 or 5 or 6 or 7 or 8) : ");
+				System.out.print("Select Option(1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9) : ");
 				try {
 					option = reader.nextInt();
 				} catch(Exception e) {
@@ -265,6 +266,7 @@ public class Application
 				System.out.println("Updated Time Stamp:");
 				FactoryService.getClockService().printTimeStamp();
 				String shouldLog = "";
+
 				while( !shouldLog.equals("y") && !shouldLog.equals("n") )
 				{
 					System.out.print("Should this event be logged (y for yes and n for no): ");
@@ -273,7 +275,6 @@ public class Application
 				System.out.println();
 				if(shouldLog.equals("y"))
 				{
-					//String logMessage = " received message from "+msg1.getSrc()+": "+msg1.getData().toString();
 					String logMessage="";
 					while( logMessage.equals(""))
 					{
@@ -290,20 +291,26 @@ public class Application
 				System.out.println();
 			}
 			break;
-			
+
 			case 6:
 			{
 				mService.acquireMutex();
 			}
 			break;
-			
+
 			case 7:
 			{
 				mService.releaseMutex();
 			}
 			break;
-
+			
 			case 8:
+			{
+				mService.printCounters();
+			}
+			break;
+
+			case 9:
 			{
 				System.out.println("==========================");
 				System.out.println("  Have a Good Day!! :)");

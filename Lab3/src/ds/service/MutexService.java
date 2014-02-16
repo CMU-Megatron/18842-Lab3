@@ -22,6 +22,9 @@ public class MutexService {
 	volatile ArrayList<String> votes = new ArrayList<String>();
 	ArrayList<TimeStampedMessage> reqQueue = new ArrayList<TimeStampedMessage>();
 	ReentrantLock serviceLock = new ReentrantLock();
+	ReentrantLock counterLock = new ReentrantLock();
+	volatile long messagesSent = 0;
+	volatile long messagesReceived = 0;
 
 	public MutexService() {
 		try {
@@ -34,25 +37,17 @@ public class MutexService {
 	}
 
 	public void configureVotingSet() {
-		/*
-		for (String groupName : msgPasser.groups.keySet()) {
-			Group grp = msgPasser.groups.get(groupName);
-			int grSize = grp.getMemberArray().size();
-
-			if (grSize > 0) {
-				System.out.println(groupName);
-				System.out.println(((Node)grp.getMemberArray().get(grSize - 1)).getName());
-				if (msgPasser.localName.equals(((Node)grp.getMemberArray().get(0)).getName())) {
-					this.votingSet = groupName;
-					return;
-				}
-			}
-		}
-		 */
 		this.votingSet = msgPasser.votingList.get(msgPasser.localName);
 		System.out.println("\nVoting set: " + votingSet);
 	}
 
+	public void printCounters() {
+		counterLock.lock();
+		System.out.println("Total messages sent : " + messagesSent);
+		System.out.println("Total messages received : " + messagesReceived);
+		counterLock.unlock();
+	}
+	
 	public void acquireMutex() {
 		if (this.state == MutexState.HELD) {
 			System.out.println("\nWarning : Lock already held! Invalid lock() operation!");
@@ -67,7 +62,6 @@ public class MutexService {
 		/* Increment and attach timestamp */
 		TimeStamp gts = votingGroup.updateGroupTSOnSend(msgPasser.localName);
 		VectorTimeStamp vts = (VectorTimeStamp)gts;
-		//System.out.println("TimeStamp got : "+Arrays.toString(vts.getVector()));
 
 		/* Set the group TimeStamp */
 		lockReq.setGroupTimeStamp(gts);
@@ -79,6 +73,10 @@ public class MutexService {
 		state = MutexState.WANTED;
 		votes.clear();
 		serviceLock.unlock();
+		
+		counterLock.lock();
+		messagesSent += votingGroup.getMemberArray().size();
+		counterLock.unlock();
 
 		multicastService.multicast(lockReq);
 
@@ -126,7 +124,6 @@ public class MutexService {
 		/* Increment and attach timestamp */
 		TimeStamp gts = votingGroup.updateGroupTSOnSend(msgPasser.localName);
 		VectorTimeStamp vts = (VectorTimeStamp)gts;
-		//System.out.println("TimeStamp got : " + Arrays.toString(vts.getVector()));
 
 		/* Set the group TimeStamp */
 		unlockReq.setGroupTimeStamp(gts);
@@ -137,11 +134,20 @@ public class MutexService {
 		System.out.println("\n[State: Lock released]");
 		state = MutexState.RELEASED;
 		serviceLock.unlock();
+		
+		counterLock.lock();
+		messagesSent += votingGroup.getMemberArray().size();
+		counterLock.unlock();
+
 		multicastService.multicast(unlockReq);
 	}
 
 	public void receiveMutexRequest(TimeStampedMessage reqMsg) {
 		System.out.println("\n***[Request message received : " + reqMsg.getOrigSrc() + "]");
+		
+		counterLock.lock();
+		messagesReceived += 1;
+		counterLock.unlock();
 
 		serviceLock.lock();
 		if (state == MutexState.HELD || votedMutex) {
@@ -157,6 +163,11 @@ public class MutexService {
 
 	public void receiveMutexRelease(TimeStampedMessage relMsg) {
 		System.out.println("\n***[Release message received : " + relMsg.getOrigSrc() + "]");
+		
+		counterLock.lock();
+		messagesReceived += 1;
+		counterLock.unlock();
+	
 		if (reqQueue.size() > 0) {
 			TimeStampedMessage reqMsg = reqQueue.remove(0);
 			serviceLock.lock();
@@ -173,6 +184,11 @@ public class MutexService {
 
 	public void voteForMutex(TimeStampedMessage reqMsg) {
 		System.out.println("\n***[Vote sent : " + reqMsg.getOrigSrc() + "]");
+		
+		counterLock.lock();
+		messagesSent += 1;
+		counterLock.unlock();
+
 		TimeStampedMessage voteMsg = new TimeStampedMessage(reqMsg);
 		voteMsg.setDest(reqMsg.getOrigSrc());
 		voteMsg.setSrc(msgPasser.localName);
@@ -188,6 +204,11 @@ public class MutexService {
 	public void receiveVote(TimeStampedMessage voteMsg) {
 		boolean isVoterPresent = false;
 		System.out.println("\n***[Received vote from : " + voteMsg.getSrc() + "]");
+		
+		counterLock.lock();
+		messagesReceived += 1;
+		counterLock.unlock();
+
 		serviceLock.lock();
 
 		if (this.state == MutexState.WANTED) {
