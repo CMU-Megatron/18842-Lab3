@@ -38,6 +38,24 @@ public class MutexService {
 
 	public void configureVotingSet() {
 		this.votingSet = msgPasser.votingList.get(msgPasser.localName);
+		
+		if ((this.votingSet == null) || (!msgPasser.groups.containsKey(this.votingSet))) {
+			System.out.println("Invalid voting set. Quiting...");
+			System.exit(0);
+		}
+	
+		boolean isValid = false;
+		ArrayList<Node> nodes = msgPasser.groups.get(this.votingSet).getMemberArray();
+		for (Node node : nodes) {
+			if (node.getName().equals(msgPasser.localName))
+				isValid = true;
+		}
+	
+		if (!isValid) {
+			System.out.println("Invalid voting set. Quiting...");
+			System.exit(0);
+		}
+		
 		System.out.println("\nVoting set: " + votingSet);
 	}
 
